@@ -1,0 +1,40 @@
+name: Java WAR CI/CD with Docker
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1️⃣ Checkout source code
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2️⃣ Setup Java 8
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+
+    # 3️⃣ Build WAR using Maven
+    - name: Build WAR with Maven
+      run: mvn clean package
+
+    # 4️⃣ Login to Docker Hub
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # 5️⃣ Build & Push Docker Image
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/simplecustomerapp:latest .
+
+        docker push ${{ secrets.DOCKER_USERNAME }}/simplecustomerapp:latest
